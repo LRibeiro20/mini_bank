@@ -2,6 +2,8 @@ import uuid
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -22,10 +24,14 @@ from app.models.payment import Payment
 # Create tables (for development/interview purposes)
 Base.metadata.create_all(bind=engine)
 
+tracer_provider = TracerProvider()
+tracer_provider.add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+
 app = FastAPI(
     title="Mini Bank System API",
     description="API for the mini bank system",
-    version="0.1.0"
+    version="0.1.0",
+    telemetry={"tracer_provider": tracer_provider}
 )
 
 # Request ID Middleware
